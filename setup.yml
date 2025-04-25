@@ -1,0 +1,47 @@
+- name: Cài đặt NGINX, Docker, Node.js
+  hosts: target
+  become: yes
+  tasks:
+    - name: Cài đặt Nginx
+      apt:
+        name: nginx
+        state: present
+        update_cache: yes
+
+    - name: Cài đặt Docker
+      apt:
+        name:
+          - docker.io
+          - docker-compose
+        state: present
+
+    - name: Khởi động và enable Docker
+      systemd:
+        name: docker
+        state: started
+        enabled: yes
+
+    # ---------- NODE.JS ----------
+    - name: Install curl (required for Node.js setup)
+      apt:
+        name: curl
+        state: present
+
+    - name: Add NodeSource APT repository (Node.js 18.x)
+      shell: curl -fsSL https://deb.nodesource.com/setup_18.x | bash -
+      args:
+        executable: /bin/bash
+
+    - name: Install Node.js
+      apt:
+        name: nodejs
+        state: present
+
+    - name: Check Node.js version
+      command: node -v
+      register: node_version
+      changed_when: false
+
+    - name: Show Node.js version
+      debug:
+        msg: "Node.js version installed: {{ node_version.stdout }}"
