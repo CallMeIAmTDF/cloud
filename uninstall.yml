@@ -1,0 +1,64 @@
+- name: Uninstall NGINX, Docker, and Node.js from Ubuntu
+  hosts: all
+  become: true
+
+  tasks:
+    - name: Stop NGINX service
+      service:
+        name: nginx
+        state: stopped
+        enabled: no
+      ignore_errors: yes  # Continue even if NGINX is not installed
+
+    - name: Uninstall NGINX
+      apt:
+        name: nginx
+        state: absent
+        purge: yes
+        update_cache: yes
+
+    - name: Remove NGINX configuration files
+      file:
+        path: /etc/nginx
+        state: absent
+
+    - name: Stop Docker service
+      service:
+        name: docker
+        state: stopped
+        enabled: no
+      ignore_errors: yes  # Continue even if Docker is not installed
+
+    - name: Uninstall Docker packages
+      apt:
+        name:
+          - docker.io
+          - docker-compose
+        state: absent
+        purge: yes
+        update_cache: yes
+
+    - name: Remove Docker data directory
+      file:
+        path: /var/lib/docker
+        state: absent
+
+    - name: Uninstall Node.js and npm
+      apt:
+        name:
+          - nodejs
+          - npm
+        state: absent
+        purge: yes
+        update_cache: yes
+
+    - name: Remove NodeSource repository
+      file:
+        path: /etc/apt/sources.list.d/nodesource.list
+        state: absent
+
+    - name: Autoremove unused packages
+      apt:
+        autoremove: yes
+        purge: yes
+        update_cache: yes
